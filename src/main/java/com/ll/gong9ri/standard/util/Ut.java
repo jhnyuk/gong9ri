@@ -1,16 +1,17 @@
 package com.ll.gong9ri.standard.util;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Ut {
+	@NoArgsConstructor(access = AccessLevel.PRIVATE)
 	public static class url {
 		public static String encode(String str) {
-			try {
-				return URLEncoder.encode(str, "UTF-8");
-			} catch (UnsupportedEncodingException e) {
-				return str;
-			}
+			return URLEncoder.encode(str, StandardCharsets.UTF_8);
 		}
 
 		public static String modifyQueryParam(String url, String paramName, String paramValue) {

@@ -36,8 +36,8 @@ public class Rq {
 		// 현재 로그인한 회원의 인증정보를 가져옴
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-		if (authentication.getPrincipal() instanceof User) {
-			this.user = (User)authentication.getPrincipal();
+		if (authentication.getPrincipal() instanceof User aUser) {
+			this.user = aUser;
 		} else {
 			this.user = null;
 		}
@@ -78,12 +78,12 @@ public class Rq {
 	}
 
 	// 뒤로가기 + 메세지
-	public String historyBack(RsData rsData) {
+	public <T> String historyBack(RsData<T> rsData) {
 		return historyBack(rsData.getMsg());
 	}
 
 	// 302 + 메세지
-	public String redirectWithMsg(String url, RsData rsData) {
+	public <T> String redirectWithMsg(String url, RsData<T> rsData) {
 		return redirectWithMsg(url, rsData.getMsg());
 	}
 

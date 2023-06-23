@@ -1,6 +1,7 @@
 package com.ll.gong9ri.base.security;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ll.gong9ri.boundedContext.member.entity.Member;
+import com.ll.gong9ri.boundedContext.member.entity.ProviderTypeCode;
 import com.ll.gong9ri.boundedContext.member.service.MemberService;
 
 import lombok.RequiredArgsConstructor;
@@ -25,21 +27,29 @@ import lombok.extern.slf4j.Slf4j;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 	private final MemberService memberService;
 
+	private String getOAuthId(final OAuth2User oAuth2User, final ProviderTypeCode providerTypeCode) {
+		if (providerTypeCode == ProviderTypeCode.NAVER)
+			return ((Map<String, String>)oAuth2User.getAttributes().get("response")).get("id");
+
+		return oAuth2User.getName();
+	}
+
 	@Override
 	@Transactional
 	public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
 		OAuth2User oAuth2User = super.loadUser(userRequest);
 
-		String providerTypeCode = userRequest.getClientRegistration().getRegistrationId().toUpperCase();
+		final ProviderTypeCode providerTypeCode = ProviderTypeCode.codeOf(
+			userRequest.getClientRegistration()
+				.getRegistrationId()
+				.toUpperCase()
+		);
 
-		String oauthId = switch (providerTypeCode) {
-			case "NAVER" -> ((Map<String, String>)oAuth2User.getAttributes().get("response")).get("id");
-			default -> oAuth2User.getName();
-		};
+		final String oauthId = getOAuthId(oAuth2User, providerTypeCode);
 
-		String username = providerTypeCode + "__%s".formatted(oauthId);
+		final String username = providerTypeCode + "__%s".formatted(oauthId);
 
-		Member member = memberService.whenSocialLogin(providerTypeCode, username).getData();
+		final Member member = memberService.whenSocialLogin(providerTypeCode, username).getData();
 
 		return new CustomOAuth2User(member.getUsername(), member.getPassword(), member.getGrantedAuthorities());
 	}
@@ -53,7 +63,7 @@ class CustomOAuth2User extends User implements OAuth2User {
 
 	@Override
 	public Map<String, Object> getAttributes() {
-		return null;
+		return Collections.emptyMap();
 	}
 
 	@Override

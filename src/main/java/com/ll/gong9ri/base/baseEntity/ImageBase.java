@@ -16,7 +16,7 @@ import lombok.experimental.SuperBuilder;
 
 @MappedSuperclass
 @Getter
-@SuperBuilder
+@SuperBuilder(toBuilder = true)
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @ToString
@@ -26,6 +26,8 @@ public class ImageBase {
 	private Long id;
 	private String filePath;
 	private String fileName;
+	// TODO: write authorites
+	// TODO: read authotites
 
 	public String getURL() {
 		return AppConfig.getDefaultImageUploadURL() + filePath;

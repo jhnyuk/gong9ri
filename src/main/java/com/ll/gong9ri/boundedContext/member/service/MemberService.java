@@ -9,6 +9,7 @@ import org.springframework.util.StringUtils;
 
 import com.ll.gong9ri.base.rsData.RsData;
 import com.ll.gong9ri.boundedContext.member.entity.Member;
+import com.ll.gong9ri.boundedContext.member.entity.ProviderTypeCode;
 import com.ll.gong9ri.boundedContext.member.repository.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -27,11 +28,11 @@ public class MemberService {
 
 	@Transactional
 	public RsData<Member> join(String username, String password) {
-		return join("GONG9RI", username, password);
+		return join(ProviderTypeCode.GONG9RI, username, password);
 	}
 
 	// 내부 처리함수, 일반회원가입, 소셜로그인을 통한 회원가입(최초 로그인 시 한번만 발생)에서 이 함수를 사용함
-	private RsData<Member> join(String providerTypeCode, String username, String password) {
+	private RsData<Member> join(ProviderTypeCode providerTypeCode, String username, String password) {
 		if (findByUsername(username).isPresent()) {
 			return RsData.of("F-1", "해당 아이디(%s)는 이미 사용중입니다.".formatted(username));
 		}
@@ -54,7 +55,7 @@ public class MemberService {
 
 	// 소셜 로그인(카카오, 구글, 네이버) 로그인이 될 때 마다 실행되는 함수
 	@Transactional
-	public RsData<Member> whenSocialLogin(String providerTypeCode, String username) {
+	public RsData<Member> whenSocialLogin(ProviderTypeCode providerTypeCode, String username) {
 		Optional<Member> opMember = findByUsername(username);
 
 		return opMember.map(member -> RsData.of("S-2", "로그인 되었습니다.", member))
