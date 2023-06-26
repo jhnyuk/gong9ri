@@ -11,24 +11,11 @@ html > body {
     word-break: keep-all;
 }
 
-body {
-    padding-top: var(--navbar__height);
-}
 
 html > body .label-text {
     font-size: 1rem;
 }
 
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: var(--navbar__height);
-    z-index: 2;
-    position: fixed;
-    top: 0px;
-    left: 0px;
-}
 
 .logo {
     display: flex;
@@ -36,14 +23,6 @@ html > body .label-text {
     width: 100%;
 }
 
-div {
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-}
-
-:root {
-    --navbar__height: 64px;
-}
 
 .dropdown-content {
     position: absolute;
