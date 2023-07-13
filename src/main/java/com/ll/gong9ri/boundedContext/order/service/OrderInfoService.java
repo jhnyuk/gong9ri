@@ -128,16 +128,10 @@ public class OrderInfoService {
 			quantities
 		);
 
-		final OrderInfo orderInfo = groupBuyOrderInfo.toBuilder()
+		OrderInfo orderInfo = groupBuyOrderInfo.toBuilder()
 			.recentOrderLogId(rsOrderLog.getData().getId())
+			.name(rsOrderLog.getData().getName())
 			.orderStatus(OrderStatus.CREATED)
-			.name(rsOrderLog.getData().getProductName()
-				+ " "
-				+ rsOrderLog.getData().getProductOptionQuantities()
-				.stream()
-				.mapToInt(ProductOptionQuantity::getQuantity)
-				.sum()
-				+ "개")
 			.build();
 
 		return RsData.of("S-1", "옵션 선택이 완료되었습니다.", repository.save(orderInfo));

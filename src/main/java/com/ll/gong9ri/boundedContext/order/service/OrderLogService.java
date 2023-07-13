@@ -82,6 +82,13 @@ public class OrderLogService {
 
 		OrderLog orderLog = groupBuyOrderLog.newLogOf().toBuilder()
 			.orderStatus(OrderStatus.CREATED)
+			.name(groupBuyOrderLog.getProductName()
+				+ " "
+				+ groupBuyOrderLog.getProductOptionQuantities()
+				.stream()
+				.mapToInt(ProductOptionQuantity::getQuantity)
+				.sum()
+				+ "개")
 			.productOptionQuantities(quantities)
 			.totalPrice(quantities.stream()
 				.mapToInt(ProductOptionQuantity::getQuantity)
