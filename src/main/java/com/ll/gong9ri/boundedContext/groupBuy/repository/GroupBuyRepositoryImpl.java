@@ -5,6 +5,9 @@ import static com.ll.gong9ri.boundedContext.groupBuy.entity.QGroupBuyMember.*;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import com.ll.gong9ri.boundedContext.groupBuy.dto.GroupBuyDetailDTO;
@@ -16,6 +19,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -40,11 +44,12 @@ public class GroupBuyRepositoryImpl implements GroupBuyRepositoryCustom {
 	}
 
 	@Override
-	public List<GroupBuyListDTO> searchGroupBuyListDTO(
-		final GroupBuyStatus groupBuyStatus,
-		final Long memberId
+	public Page<GroupBuyListDTO> searchGroupBuyListDTO(
+		final GroupBuyStatus status,
+		final Long memberId,
+		Pageable pageable
 	) {
-		return queryFactory
+		JPAQuery<GroupBuyListDTO> query = queryFactory
 			.select(Projections.constructor(
 				GroupBuyListDTO.class,
 				groupBuy.id,
@@ -53,20 +58,33 @@ public class GroupBuyRepositoryImpl implements GroupBuyRepositoryCustom {
 				groupBuy.startDate,
 				groupBuy.endDate,
 				groupBuy.status,
-				groupBuy.groupBuyMembers.size(),
+				groupBuy.groupBuyMembers.size().subtract(Expressions.constant(1)),
 				groupBuy.nextHeadCount,
 				groupBuy.currentSalePrice,
 				groupBuy.nextSalePrice,
-				isParticipate(memberId)
+				isParticipate(memberId),
+				groupBuy.product
 			))
-			.from(groupBuyMember)
+			.from(groupBuy)
 			.where(
-				eqStatus(groupBuyStatus),
+				eqStatus(status),
 				groupBuyMember.role.ne(GroupBuyMemberRole.STORE)
 			)
-			.leftJoin(groupBuyMember.groupBuy, groupBuy)
-			.groupBy(groupBuy.id)
+			.leftJoin(groupBuy.groupBuyMembers, groupBuyMember)
+			.groupBy(groupBuy.id);
+
+		if (pageable.isPaged()) {
+			query.offset(pageable.getOffset()).limit(pageable.getPageSize());
+		}
+
+		long totalCount = query.fetchCount();
+
+		List<GroupBuyListDTO> resultList = query
+			.offset(pageable.getOffset())
+			.limit(pageable.getPageSize())
 			.fetch();
+
+		return new PageImpl<>(resultList, pageable, totalCount);
 	}
 
 	public GroupBuyDetailDTO getGroupBuyDetailDTO(final Long id, final Long memberId) {
@@ -80,11 +98,12 @@ public class GroupBuyRepositoryImpl implements GroupBuyRepositoryCustom {
 				groupBuy.startDate,
 				groupBuy.endDate,
 				groupBuy.status,
-				groupBuy.groupBuyMembers.size(),
+				groupBuy.groupBuyMembers.size().subtract(Expressions.constant(1)),
 				groupBuy.nextHeadCount,
 				groupBuy.currentSalePrice,
 				groupBuy.nextSalePrice,
-				isParticipate(memberId)
+				isParticipate(memberId),
+				groupBuy.product
 			))
 			.from(groupBuy)
 			.where(groupBuy.id.eq(id))

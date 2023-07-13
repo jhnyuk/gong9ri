@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,8 +51,9 @@ public class GroupBuyService {
 		return groupBuyRepository.findAll();
 	}
 
-	public List<GroupBuyListDTO> getAllGroupBuyListDTO(final GroupBuyStatus status, final Long memberId) {
-		return groupBuyRepositoryImpl.searchGroupBuyListDTO(status, memberId);
+	public Page<GroupBuyListDTO> searchGroupBuyList(GroupBuyStatus status, Long memberId, int page) {
+		Pageable pageable = PageRequest.of(page, 5);
+		return groupBuyRepositoryImpl.searchGroupBuyListDTO(status, memberId, pageable);
 	}
 
 	public GroupBuyDetailDTO getGroupBuyDetailDTO(final Long id, final Long memberId) {
@@ -79,7 +83,7 @@ public class GroupBuyService {
 
 		GroupBuy groupBuy = GroupBuy.builder()
 			.product(product)
-			.name(product.getName())
+			.name("[공동구매] " + product.getName())
 			.startDate(LocalDateTime.now())
 			// 종료 시간을 현재 시간의 '시'만 가져와서 25시간을 더한 값으로 설정
 			.endDate(LocalDateTime.now().truncatedTo(ChronoUnit.HOURS).plusHours(25))

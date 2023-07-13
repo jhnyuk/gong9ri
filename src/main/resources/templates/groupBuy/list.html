@@ -1,68 +1,157 @@
 <!DOCTYPE html>
-<html lang="ko" layout:decorate="~{usr/layout/layout.html}">
+<html lang="ko" layout:decorate="~{usr/layout/layout.html}" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>공동구매 목록</title>
-</head>
-<body>
-<main layout:fragment="main">
-    <form>
-        <select name="status">
-            <option value="">전체</option>
-            <!-- 기본값 -->
-            <!-- th:list -> th:each option 들 추가 가능 -->
-        </select>
-        <select name="isParticipate">
-            <option value="0">전체</option>
-            <option value="1">참여중인 공동구매</option>
-        </select>
-        <button type="submit">검색</button>
-    </form>
-    <div>
-        <div th:if="${groupBuyList.isEmpty()}">공동구매 목록이 비어있습니다.</div>
-        <table class="table">
-            <tr class="table-header" th:if="${!groupBuyList.isEmpty()}">
-                <th>상품 이미지</th>
-                <th>번호</th>
-                <th>상품명</th>
-                <th>진행 상태</th>
-                <th>참여 여부</th>
-                <th>현재 인원</th>
-                <th>시작일</th>
-                <th>종료일</th>
-            </tr>
-            <tr th:each="groupBuy : ${groupBuyList}">
-                <td>
-                    <div>
-                        <!-- TODO: 상품 이미지 불러오기 -->
-                        <img alt="상품 이미지">
-                    </div>
-                </td>
-                <td>
-                    <a th:href="@{|detail/${groupBuy.id}|}" th:text="${groupBuy.id}"></a>
-                </td>
-                <td>
-                    <div th:href="@{|detail/${groupBuy.id}|}" th:text="${groupBuy.name}"></div>
-                </td>
-                <td>
-                    <div th:href="@{|detail/${groupBuy.id}|}" th:text="${groupBuy.status.value}"></div>
-                </td>
-                <td>
-                    <div th:href="@{|detail/${groupBuy.id}|}" th:text="${groupBuy.isParticipate}"></div>
-                </td>
-                <td>
-                    <div th:href="@{|detail/${groupBuy.id}|}" th:text="${groupBuy.currentMemberCount}"></div>
-                </td>
-                <td>
-                    <div th:text="${#temporals.format(groupBuy.startDate, 'yyyy-MM-dd HH:mm:ss')}"></div>
-                </td>
-                <td>
-                    <div th:text="${#temporals.format(groupBuy.endDate, 'yyyy-MM-dd HH:mm:ss')}"></div>
-                </td>
+    <style>
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-            </tr>
-        </table>
+        .pagination li {
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+<main layout:fragment="main" class="container max-w-2xl mx-auto">
+    <div class="p-4 grid grid-cols-1 gap-4">
+        <h1 class="text-2xl font-bold mb-4">공동구매 목록</h1>
+
+        <!-- 필터링 검색 시작 -->
+        <form class="mb-4" id="filterForm">
+            <div class="flex items-center mb-2">
+                <label for="status" class="mr-2">진행 상태:</label>
+                <select id="status" name="status" class="border rounded px-2 py-1">
+                    <option value="">전체</option>
+                    <option value="PROGRESS">모집 진행중</option>
+                    <option value="ORDER">주문 진행중</option>
+                    <option value="DONE">모집 종료</option>
+                </select>
+            </div>
+            <div class="flex items-center mb-2">
+                <label for="participate" class="mr-2">참여 여부:</label>
+                <select id="participate" name="participate" class="border rounded px-2 py-1">
+                    <option value="0">전체</option>
+                    <option value="1">참여중인 공동구매</option>
+                </select>
+            </div>
+            <button type="button" onclick="filterGroupBuys()" class="border rounded px-2 py-1">검색</button>
+        </form>
+        <!-- 필터링 검색 끝 -->
+
+        <div th:each="groupBuy : ${groupBuyList}">
+            <!-- 공동구매 목록 -->
+            <a class="flex flex-col" th:href="@{|detail/${groupBuy.id}|}">
+                <div class="card card-side  bg-base-100 shadow-lg">
+
+                    <!-- 이미지 -->
+                    <figure class="flex flex-row w-36">
+                        <img alt="이미지가 없습니다." class="h-full w-full object-cover"
+                             src="/images/noImg.png" th:if="${groupBuy.product.images.size() eq 0}"/>
+                        <img alt="상품 이미지" class="h-full w-full object-cover"
+                             th:if="${groupBuy.product.images.size() ne 0}" th:src="${groupBuy.product.images.get(0).getURL()}"/>
+                    </figure>
+
+                    <div class="card-body">
+                        <p class="text-black text-lg font-semibold" th:text="${groupBuy.name}"></p>
+                        <p class="text-xs text-gray-500 text-right" th:text="${groupBuy.currentMemberCount + ' 명 참여중'}"></p>
+                        <p class="text-lg font-bold text-purple-500" th:text="${groupBuy.nextMemberCount + '명 달성 시' + groupBuy.nextSalePrice + '원에 구매 가능!'}"></p>
+                        <p class="text-sm text-gray-500" th:text="${'정상가 : ' + groupBuy.price}"></p>
+                        <p class="text-base font-bold text-red-500" th:text="${'현재 가격 : ' + groupBuy.currentSalePrice + '원'}"></p>
+                        <p th:text="${'종료 시간 : ' + #temporals.format(groupBuy.endDate, 'MM-dd HH:mm')}"></p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-4" th:if="${!groupBuyList.isEmpty()}">
+            <nav class="flex justify-center">
+                <ul class="pagination">
+                    <li class="page-item" th:classappend="${page == 0} ? 'disabled'">
+                        <a class="page-link" href="#" th:href="@{|/groupBuy/list?status=${status}&participate=${participate}&page=0|}">&laquo;</a>
+                    </li>
+                    <li class="page-item" th:classappend="${page == 0} ? 'disabled'">
+                        <a class="page-link" href="#" th:href="@{|/groupBuy/list?status=${status}&participate=${participate}&page=${page - 1}|}">&lsaquo;</a>
+                    </li>
+                    <li th:each="pageNum : ${#numbers.sequence(1, groupBuyList.totalPages)}"
+                        th:if="${pageNum >= page - 5 and pageNum <= page + 5}"
+                        th:classappend="${pageNum == page + 1} ? 'active'"
+                        class="page-item">
+                        <a th:text="${pageNum}" class="page-link" th:href="@{|/groupBuy/list?status=${status}&participate=${participate}&page=${pageNum - 1}|}"></a>
+                    </li>
+                    <li class="page-item" th:classappend="${page == groupBuyList.totalPages - 1} ? 'disabled'">
+                        <a class="page-link" href="#" th:href="@{|/groupBuy/list?status=${status}&participate=${participate}&page=${page + 1}|}">&rsaquo;</a>
+                    </li>
+                    <li class="page-item" th:classappend="${page == groupBuyList.totalPages - 1} ? 'disabled'">
+                        <a class="page-link" href="#" th:href="@{|/groupBuy/list?status=${status}&participate=${participate}&page=${groupBuyList.totalPages - 1}|}">&raquo;</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
     </div>
 </main>
+
+<script>
+    var statusSelect = document.getElementById('status');
+    var participateSelect = document.getElementById('participate');
+
+    // 필터링 함수
+    function filterGroupBuys() {
+        var status = statusSelect.value;
+        var participate = participateSelect.value;
+        var urlParams = new URLSearchParams();
+
+        urlParams.set('status', status);
+        urlParams.set('participate', participate);
+
+        var newUrl = window.location.pathname + '?' + urlParams.toString();
+        window.location.href = newUrl;
+    }
+
+    // 필터 옵션 초기화 함수
+    function clearFilterOptions() {
+        localStorage.removeItem('selectedStatus');
+        localStorage.removeItem('selectedParticipate');
+    }
+
+    // 필터 옵션 저장 함수
+    function saveFilterOptions() {
+        localStorage.setItem('selectedStatus', statusSelect.value);
+        localStorage.setItem('selectedParticipate', participateSelect.value);
+    }
+
+    // 페이지 로드 시 필터 옵션 복원
+    window.addEventListener('DOMContentLoaded', function() {
+        // 필터 옵션 복원
+        var savedStatus = localStorage.getItem('selectedStatus');
+        var savedParticipate = localStorage.getItem('selectedParticipate');
+
+        if (savedStatus) {
+            var selectedOption = statusSelect.querySelector('option[value="' + savedStatus + '"]');
+            if (selectedOption) {
+                statusSelect.value = savedStatus;
+            }
+        }
+
+        if (savedParticipate) {
+            var selectedOption = participateSelect.querySelector('option[value="' + savedParticipate + '"]');
+            if (selectedOption) {
+                participateSelect.value = savedParticipate;
+            }
+        }
+    });
+
+    // 페이지 이탈 시 이벤트 리스너 등록
+    window.addEventListener('beforeunload', saveFilterOptions);
+
+    // 페이지 이동 시 이벤트 리스너 등록
+    window.addEventListener('unload', clearFilterOptions);
+</script>
+
 </body>
 </html>

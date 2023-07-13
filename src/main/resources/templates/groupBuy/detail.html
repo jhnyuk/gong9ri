@@ -6,57 +6,106 @@
 </head>
 <body>
 <main layout:fragment="main">
-    <table class="table">
-        <tr>
-            <th>상품명</th>
-            <td>
-                <div th:text="${groupBuy.name}"></div>
-            </td>
-        </tr>
-        <tr>
-            <th>가격</th>
-            <td>
-                <div th:text="${groupBuy.price}"></div>
-            </td>
-        </tr>
-        <tr>
-            <th>현재 참여 인원</th>
-            <td>
-                <div th:text="${groupBuy.currentMemberCount}"></div>
-            </td>
-        </tr>
-        <tr>
-            <th>시작 시간</th>
-            <td>
-                <div th:text="${groupBuy.startDate}"></div>
-            </td>
-        </tr>
-        <tr>
-            <th>종료 시간</th>
-            <td>
-                <div th:text="${groupBuy.endDate}"></div>
-            </td>
-        </tr>
-        <tr>
-            <th>공동구매 상태</th>
-            <td>
-                <div th:text="${groupBuy.status.value}"></div>
-            </td>
-        </tr>
-        <tr>
-            <th>공동구매 참여 여부</th>
-            <td>
-                <div th:text="${groupBuy.isParticipate}"></div>
-            </td>
-        </tr>
-    </table>
+    <div class="container max-w-2xl mx-auto">
+        <div class="form-container form-control border-0">
+  <!--          &lt;!&ndash; 이미지 슬라이드 &ndash;&gt;
+            <div class="carousel w-full max-w-md mx-auto" th:if="${groupBuy.product.images.isEmpty()}">
+                <img alt="이미지가 없습니다." class="h-full w-full object-cover"
+                     src="/images/noImg.png">
+            </div>
+            <div class="carousel w-full max-w-md mx-auto" th:if="${!groupBuy.product.images.isEmpty()}">
+                <div class="carousel-item w-full flex justify-center" th:each="image, idx : *{groupBuy.product.images}"
+                     th:id="${'slide' + idx}">
+                    <img class="w-full" th:src="${image}"/>
+                </div>
+            </div>
+
+            &lt;!&ndash;   번호 &ndash;&gt;
+            <div class="flex w-full gap-2 justify-center items-center">
+                <div class="flex-col" th:each="image, i : *{groupBuy.product.images}">
+                    <a class="btn btn-xs btn-primary a__move" th:href="${'#slide' + i}" th:text="${i.count}">index</a>
+                </div>
+            </div>
+            &lt;!&ndash; 이미지 슬라이드 끝 &ndash;&gt;
+            &lt;!&ndash; 상품 정보 &ndash;&gt;
+            <div class="product flex flex-col">
+                <span class="product-name" th:text="*{groupBuy.name}"></span>
+                <div class="fs-5 has-text-black text-left">
+                    <span th:text="${groupBuy.description}"></span>
+                </div>
+                <div class="discounts">
+                    <ul>
+                        <li th:each="discount : *{product.discounts}">
+                            <p><span th:text="*{discount.headCount}"></span>명 모일 시</p>
+                            <p><span th:text="*{discount.salePrice}"></span> 원 </p>
+                        </li>
+                    </ul>
+                </div>
+                <a class="store-info" th:href="@{|/store/${product.storeId}|}"
+                   th:text="${'스토어 : '+groupBuy.product.storeName}"></a>
+            </div>
+-->
+            <table class="table">
+                <tr>
+                    <th>상품명</th>
+                    <td>
+                        <div th:text="${groupBuy.name}"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>가격</th>
+                    <td>
+                        <div th:text="${groupBuy.price}"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>현재 참여 인원</th>
+                    <td>
+                        <div th:text="${groupBuy.currentMemberCount}"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>시작 시간</th>
+                    <td>
+                        <div th:text="${groupBuy.startDate}"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>종료 시간</th>
+                    <td>
+                        <div th:text="${groupBuy.endDate}"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>공동구매 상태</th>
+                    <td>
+                        <div th:text="${groupBuy.status.value}"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>공동구매 참여 여부</th>
+                    <td>
+                        <div th:text="${groupBuy.isParticipate}"></div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
 
     <!--    공동구매 참여 버튼-->
     <div class="flex flex-col justify-center items-center">
-        <form method="post" th:action="@{|/groupBuy/${groupBuy.id}/participate|}" th:href="@{|detail/${groupBuy.id}|}">
+        <form method="post" th:if="${groupBuy.isParticipate eq false}"
+              th:action="@{|/groupBuy/${groupBuy.id}/participate|}" th:href="@{|detail/${groupBuy.id}|}">
             <button class="btn btn-primary border" onclick="return confirm('공동구매에 참여하시겠습니까?')"
                     type="submit">
                 공동구매 참여하기
+            </button>
+        </form>
+        <form method="post" th:if="${groupBuy.isParticipate eq true}" th:action="@{|/groupBuy/${groupBuy.id}/cancel|}"
+              th:href="@{|detail/${groupBuy.id}|}">
+            <button class="btn btn-primary border" onclick="return confirm('공동구매 참여를 취소하시겠습니까?')"
+                    type="submit">
+                공동구매 참여 취소
             </button>
         </form>
         <a th:href="@{|/groupbuy/${chatRoomId}|}">

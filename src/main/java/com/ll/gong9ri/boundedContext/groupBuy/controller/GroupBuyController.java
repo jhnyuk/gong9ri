@@ -3,6 +3,7 @@ package com.ll.gong9ri.boundedContext.groupBuy.controller;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -62,23 +63,28 @@ public class GroupBuyController {
 
 	@GetMapping("/list")
 	public String groupBuyList(
-		@RequestParam(defaultValue = "") String status,
-		@RequestParam(defaultValue = "0") Integer isParticipate,
+		@RequestParam(value = "status", required = false) String status,
+		@RequestParam(value = "participate", defaultValue = "0") Integer participate,
+		@RequestParam(value = "page", defaultValue = "0") int page,
 		Model model
 	) {
-		final List<GroupBuyListDTO> dtos = groupBuyService.getAllGroupBuyListDTO(
+
+		Page<GroupBuyListDTO> groupBuyListDTOS = groupBuyService.searchGroupBuyList(
 			GroupBuyStatus.of(status),
-			isParticipate == 0 && rq.isLogin() ? rq.getMember().getId() : null
-		);
-		model.addAttribute("groupBuyStatus", GroupBuyStatus.values());
-		model.addAttribute("groupBuyList", dtos);
+			participate == 0 && rq.isLogin() ? rq.getMember().getId() : null,
+			page);
+
+		model.addAttribute("groupBuyList", groupBuyListDTOS);
+		model.addAttribute("status", status);
+		model.addAttribute("participate", participate);
+		model.addAttribute("page", page);
 
 		return "groupBuy/list";
 	}
 
 	@GetMapping("/mylist")
-	public String groupBuyList(Model model) {
-		final List<GroupBuyListDTO> dtos = groupBuyService.getAllGroupBuyListDTO(null, rq.getMember().getId());
+	public String groupBuyList(@RequestParam(value = "page", defaultValue = "0") int page, Model model) {
+		final Page<GroupBuyListDTO> dtos = groupBuyService.searchGroupBuyList(null, rq.getMember().getId(), page);
 		model.addAttribute("groupBuyStatus", GroupBuyStatus.values());
 		model.addAttribute("groupBuyList", dtos);
 
@@ -106,7 +112,7 @@ public class GroupBuyController {
 		return rq.redirectWithMsg("/groupBuy/detail/" + groupBuyId, rsGroupBuyMember);
 	}
 
-	@PutMapping("/{groupBuyId}/cancel")
+	@PostMapping("/{groupBuyId}/cancel")
 	@PreAuthorize("isAuthenticated()")
 	public String participateCancelGroupBuy(@PathVariable("groupBuyId") Long groupBuyId) {
 		final RsData<GroupBuy> rsGroupBuy = validateGroupBuy(groupBuyId);
