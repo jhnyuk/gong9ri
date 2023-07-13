@@ -12,7 +12,7 @@
         </div>
         <div th:each="order : ${orders}" th:if="${!orders.isEmpty()}">
             <!-- card 시작 -->
-            <a class="flex flex-col" th:href="@{|/order/detail/${order.id}|}">
+            <a class="flex flex-col" th:href="@{|/order/choose/${order.id}|}">
                 <div class="card card-side  bg-base-100 shadow-lg">
 
                     <!--                    &lt;!&ndash; 이미지 &ndash;&gt;-->

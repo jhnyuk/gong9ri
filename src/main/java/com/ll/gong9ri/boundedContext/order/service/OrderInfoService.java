@@ -56,9 +56,13 @@ public class OrderInfoService {
 			.orderStatus(OrderStatus.GROUP_BUY_CREATED)
 			.build();
 
-		orderInfo = repository.save(orderInfo);
+		RsData<OrderLog> orderLogRsData = orderLogService.groupBuyCreate(orderInfo);
 
-		orderLogService.groupBuyCreate(orderInfo);
+		orderInfo = orderInfo.toBuilder()
+			.recentOrderLogId(orderLogRsData.getData().getId())
+			.build();
+
+		orderInfo = repository.save(orderInfo);
 
 		return RsData.successOf(orderInfo);
 	}

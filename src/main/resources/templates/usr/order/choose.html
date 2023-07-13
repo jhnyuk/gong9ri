@@ -5,187 +5,31 @@
     <title>상품 상세 옵션 주문</title>
     <script th:inline="javascript">
         const token = /*[[${_csrf.token}]]*/ '';
-        const orderId = /*[[${orderId}]]*/;
+        const orderId = /*[[${orderId}]]*/'';
     </script>
-    <style>
-        .carousel-image {
-            width: 375px;
-            max-height: 375px;
-            object-fit: contain;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            margin-top: 10;
-            padding: 80px;
-        }
-
-        .form-container {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #fff;
-        }
-
-        .form-container label {
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #555;
-        }
-
-        .form-container input[type="text"],
-        .form-container textarea {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            border-radius: 0;
-            border-bottom: 1px solid #d9d9d9;
-            resize: none;
-            color: #d2d6da;
-            margin-bottom: 20px;
-        }
-
-        .form-container input[type="text"]:focus,
-        .form-container textarea:focus {
-            color: #000;
-        }
-
-        .product-name {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .product {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
-        }
-
-        .discount li {
-            color: #8F959E;
-            font-size: 17px;
-        }
-
-        .discount li span {
-            font-weight: bold;
-            color: #8F959E;
-            font-size: 17px;
-        }
-
-        .discount p {
-            display: inline;
-        }
-
-        .options {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-        }
-
-        .options tr {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 10px;
-        }
-
-        .options td {
-            vertical-align: top;
-            margin-bottom: 10px;
-            font-weight: bold;
-            font-size: 17px;
-        }
-
-        .options ul {
-            display: flex;
-            flex-wrap: wrap;
-            margin: 0;
-            padding: 0;
-            list-style-type: none;
-            font-weight: bold;
-            font-size: 17px;
-        }
-
-        .options li {
-            background-color: #f5f6fa;
-            border-radius: 10px;
-            margin-right: 10px;
-            padding: 10px 8px;
-            display: inline-flex;
-            height: 60px;
-            text-align: center;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .options .options-detail {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .my-choice li {
-            cursor: pointer;
-        }
-
-        .my-choice input[type="number"] {
-            width: 50px;
-        }
-
-        .my-choice input[type="number"]::-webkit-inner-spin-button,
-        .my-choice input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-    </style>
 </head>
 <body>
 <main layout:fragment="main">
     <div class="container max-w-2xl mx-auto">
         <div class="form-container form-control border-0">
             <!-- 이미지 슬라이드 -->
-
-            <!-- 샘플 이미지 슬라이드 -->
-            <div class="carousel carousel-center max-w-md p-4 space-x-4 rounded-box">
-                <div class="carousel-item">
-                    <img class="rounded-box carousel-image"
-                         src="https://tooit.s3.ap-northeast-2.amazonaws.com/voteImage/7cb6be73-514e-4202-b44d-59557bf86f37_most.png"/>
-                </div>
-                <div class="carousel-item">
-                    <img class="rounded-box carousel-image"
-                         src="https://tooit.s3.ap-northeast-2.amazonaws.com/voteImage/7cb6be73-514e-4202-b44d-59557bf86f37_most.png"/>
-                </div>
-                <div class="carousel-item">
-                    <img class="rounded-box carousel-image"
-                         src="https://tooit.s3.ap-northeast-2.amazonaws.com/voteImage/7cb6be73-514e-4202-b44d-59557bf86f37_most.png"/>
-                </div>
-                <div class="carousel-item">
-                    <img class="rounded-box carousel-image"
-                         src="https://tooit.s3.ap-northeast-2.amazonaws.com/voteImage/7cb6be73-514e-4202-b44d-59557bf86f37_most.png"/>
+            <!-- 이미지 슬라이드 -->
+            <div class="carousel w-full max-w-md mx-auto" th:if="${product.images.isEmpty()}">
+                <img alt="이미지가 없습니다." class="h-full w-full object-cover"
+                     src="/images/noImg.png">
+            </div>
+            <div class="carousel w-full max-w-md mx-auto" th:if="${!product.images.isEmpty()}">
+                <div class="carousel-item w-full flex justify-center" th:each="image, idx : *{product.images}"
+                     th:id="${'slide' + idx}">
+                    <img class="w-full" th:src="${image}"/>
                 </div>
             </div>
 
-            <!-- 실제 이미지 슬라이드 -->
-            <div class="carousel slide" data-ride="carousel" id="carouselExampleIndicators">
-                <ol class="carousel-indicators">
-                    <li data-target="#carouselExampleIndicators" th:class="${idx.index == 0} ? 'active' : ''"
-                        th:data-slide-to="${idx.index}" th:each="image, idx : *{product.images}"></li>
-                </ol>
-                <div class="carousel-inner">
-                    <div class="carousel-item" th:class="${idx.index == 0} ? 'active' : ''"
-                         th:each="image, idx : *{product.images}">
-                        <img alt="Slide Image" class="d-block w-100 rounded-box" th:src="${image}">
-                    </div>
+            <!--   번호 -->
+            <div class="flex w-full gap-2 justify-center items-center my-2">
+                <div class="flex-col" th:each="image, i : *{product.images}">
+                    <a class="btn btn-xs btn-primary a__move" th:href="${'#slide' + i}" th:text="${i.count}">index</a>
                 </div>
-                <a class="carousel-control-prev" data-slide="prev" href="#carouselExampleIndicators"
-                   role="button">
-                    <span aria-hidden="true" class="carousel-control-prev-icon"></span>
-                    <span class="sr-only"> < </span>
-                </a>
-                <a class="carousel-control-next" data-slide="next" href="#carouselExampleIndicators"
-                   role="button">
-                    <span aria-hidden="true" class="carousel-control-next-icon"></span>
-                    <span class="sr-only"> > </span>
-                </a>
             </div>
             <!-- 이미지 슬라이드 끝 -->
 
@@ -204,24 +48,26 @@
 
             <!-- 옵션 선택 (Options) -->
             <table class="options">
-                <tr th:each="option, optionIdx : ${product.options}">
+                <p class="text-2xl font-bold rounded py-2">✅ 옵션 선택</p>
+                <tr class="flex flex-col justify-center items-center" th:each="option, optionIdx : ${product.options}">
                     <!-- 옵션1 표시(ex. 사이즈) -->
                     <button onclick="addToCartForm(this)"
                             th:option-id="${option.id}"
                             th:option-name="${option.optionDetail == null ? '기본' : option.optionDetail}"
+                            class="btn btn-primary my-1 mx-auto justify-center justify-items-center"
                             th:text="|${option.optionDetail == null ? '기본' : option.optionDetail}|"/>
                 </tr>
             </table>
 
             <!-- 내 선택 리스트(장바구니 기능으로 위에서 선택한 옵션들이 뜨고 구매할 개수 입력) -->
-            <div>
-                <p>내 선택</p>
-                <ul class="my-choice" id="myChoice">
+            <div class="rounded border border-primary">
+                <p class="text-xl font-bold rounded mx-2 my-2">🛒 선택된 옵션</p>
+                <ul class="my-choice mx-2 my-1" id="myChoice">
 
                 </ul>
             </div>
 
-            <button onclick="addToCart()">상품 주문하기</button>
+            <button class="btn btn-primary my-2" onclick="addToCart()">상품 주문하기</button>
         </div>
     </div>
 
