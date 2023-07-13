@@ -1,30 +1,8 @@
 package com.ll.gong9ri.boundedContext.product.controller;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-
 import com.ll.gong9ri.base.rq.Rq;
 import com.ll.gong9ri.base.rsData.RsData;
-import com.ll.gong9ri.boundedContext.product.dto.ProductDTO;
-import com.ll.gong9ri.boundedContext.product.dto.ProductDiscountDTO;
-import com.ll.gong9ri.boundedContext.product.dto.ProductImageDTO;
-import com.ll.gong9ri.boundedContext.product.dto.ProductOptionDTO;
-import com.ll.gong9ri.boundedContext.product.dto.ProductOptionDetailDTO;
-import com.ll.gong9ri.boundedContext.product.dto.ProductRegisterDTO;
+import com.ll.gong9ri.boundedContext.product.dto.*;
 import com.ll.gong9ri.boundedContext.product.entity.Product;
 import com.ll.gong9ri.boundedContext.product.service.ProductDiscountService;
 import com.ll.gong9ri.boundedContext.product.service.ProductImageService;
@@ -32,10 +10,19 @@ import com.ll.gong9ri.boundedContext.product.service.ProductOptionService;
 import com.ll.gong9ri.boundedContext.product.service.ProductService;
 import com.ll.gong9ri.boundedContext.store.entity.Store;
 import com.ll.gong9ri.boundedContext.store.service.StoreService;
-
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -106,7 +93,7 @@ public class ManageProductController {
 
 		model.addAttribute(PRODUCT, rsProduct.getData());
 
-		return rq.redirectWithMsg("/manage/product/%d/detail".formatted(productId), "상품 상세 정보 저장에 성공했습니다.");
+		return rq.redirectWithMsg("/product/list", "상품 상세 정보 저장에 성공했습니다.");
 	}
 
 	@GetMapping("/registration")
@@ -174,25 +161,6 @@ public class ManageProductController {
 
 		return ResponseEntity.ok().body(productRs.getData().getId());
 	}
-
-/*	@GetMapping("/{productId}/image")
-	public String showProductImageForm(@PathVariable Long productId, Model model) {
-		List<ProductImageDTO> images = imageService.getProductImages(productId);
-
-		model.addAttribute("images", images);
-
-		return "product/image";
-	}
-
-	@PutMapping("/{productId}/image")
-	public String addProductImages(@PathVariable Long productId, @Valid List<ProductImageDTO> dtos) {
-		RsData<Product> productRs = productService.addImages(productId, dtos);
-		if (productRs.isFail()) {
-			return rq.historyBack(productRs);
-		}
-
-		return rq.redirectWithMsg("/manage/product/%d/detail".formatted(productRs.getData().getId()), productRs);
-	}*/
 
 	@GetMapping("/{productId}/discount")
 	public String showProductDiscountForm(@PathVariable Long productId, Model model) {
