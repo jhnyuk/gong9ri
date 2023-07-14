@@ -2,7 +2,7 @@
 실시간 채팅으로 소통하여 더 높은 할인을 받을 수 있는 플랫폼 Gong9ri
 
 - [Website](https://gong9ri.kkbk.me/)
-- [demo on YouTube]()
+- [demo on YouTube](https://www.youtube.com/watch?v=Ggh2COECPhQ)
 
 ## 주요 기능
 
